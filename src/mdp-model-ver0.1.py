@@ -16,7 +16,9 @@ figpath = workpath + "/figures/"
 libpath = workpath + "/libraries/"
 sys.path.append(libpath)
 
-from utils import loadcase,ext2int,bustypes
-mpc = loadcase(basepath)
-mpc = ext2int(mpc)
-ref,pv,pq = bustypes(mpc.bus,mpc.gen)
+from utils import loadcase
+from powerutils import runpf
+mpc = loadcase(basepath,'dat39')
+mpc.bus[30,1] = 4
+
+results = runpf(mpc)
