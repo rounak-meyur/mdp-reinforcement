@@ -312,6 +312,63 @@ def makeBdc(*args):
     return Bbus,Bf,Pbusinj,Pfinj
 
 
+def makeYbus(*args):
+    """
+    
+
+    Parameters
+    ----------
+    *args : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    None.
+
+    """
+    # extract from MPC if necessary
+    if len(args) == 1:
+        mpc     = args[0]
+        bus     = mpc.bus
+        branch  = mpc.branch
+    elif len(args) == 2:
+        bus = args[0]
+        branch = args[1]
+    else:
+        print("Error!!! Wrong number of arguments passed.")
+        sys.exit(0)
+
+    # constants
+    nb = bus.shape[0]          # number of buses
+    nl = branch.shape[0]       # number of lines
+
+    # check that bus numbers are equal to indices to bus (one set of bus numbers)
+    if not np.array_equal(bus[:, BUS_I],np.array(range(nb))):
+        print("makeBdc: buses must be numbered consecutively in bus matrix")
+        print("\n Use ext2int() to convert to internal ordering")
+        sys.exit(0)
+    
+    # for each branch, compute the elements of the branch B matrix and the phase
+    # shift "quiescent" injections, where
+    # 
+    #       | If |   | Yff  Yft |   | Vf |
+    #       |    | = |          | * |    |
+    #       | It |   | Ytf  Ytt |   | Vt |
+    
+    stat = branch[:, BR_STATUS]                                     # ones at in-service branches
+    ys = np.divide(stat,(branch[:, BR_R] + 1j * branch[:, BR_R]))   # series admittance
+    bc = np.divide(stat,branch[:,BR_B])                             # shunt admittance
+    tap = np.ones(shape=(nl,))                                      # default tap ratio = 1
+    ind = np.where(branch[:, TAP])[0]                               # indices of non-zero tap ratios
+    tap[ind] = branch[ind, TAP]                                     # assign non-zero tap ratios
+    b = np.divide(bc,tap)
+    tap = np.multiply(tap,np.exp(1j*np.pi/180 * branch[:, SHIFT]))  # add phase shifters
+    Ytt = ys + 1j*bc/2;
+    Yff = np.divide(Ytt,(np.multiply(tap,np.conj(tap))))
+    Yft = -np.divide(ys,np.conj(tap));
+    Ytf = -np.divide(ys,tap);
+
+
 def makeSdzip(baseMVA, bus, mpopt=None):
     """
     Builds vectors of nominal complex bus power demands for ZIP loads.
