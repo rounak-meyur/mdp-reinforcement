@@ -33,9 +33,9 @@ for k=1:nl
     iter = 1;
     trip{k,iter}=k;
 
-    % Run DC power flow in steady state
+    % Run AC power flow in steady state
     flogic = zeros(nl,1);
-    simmpc = rundcpf(mpc,mpopt,fname);
+    simmpc = runpf(mpc,mpopt,fname);
 
     while true
         % Simulate the trip event
@@ -44,10 +44,12 @@ for k=1:nl
         % Insert code to handle islands without slack bus
         simmpc = handleIslands(simmpc);
 
-        % Run dc power flow
-        simmpc = rundcpf(simmpc,mpopt,fname);
+        % Run ac power flow
+        simmpc = runpf(simmpc,mpopt,fname);
         pf = simmpc.branch(:,PF);
-        flogic(:,iter) = ~(abs(pf)<=flim);
+        qf = simmpc.branch(:,QF);
+        sf = abs(pf + 1j*qf);
+        flogic(:,iter) = ~(abs(sf)<=flim);
         
         % Check for out of limit lines
         if ismember(1,flogic(:,iter))
