@@ -65,6 +65,7 @@ for i=1:length(mpc_array)
     % Replace Pd values
     [~,busind] = ismember(submpc.bus(:,BUS_I),mpc.bus(:,BUS_I));
     mpc.bus(busind,PD) = submpc.bus(:,PD);
+    mpc.bus(busind,QD) = submpc.bus(:,QD);
     
     % Replace Pg values
     subgen = submpc.gen(:,GEN_BUS);

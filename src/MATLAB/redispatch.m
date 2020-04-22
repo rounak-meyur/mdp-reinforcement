@@ -24,50 +24,60 @@ function [mpc] = redispatch(mpc)
     MU_PMAX, MU_PMIN, MU_QMAX, MU_QMIN, PC1, PC2, QC1MIN, QC1MAX, ...
     QC2MIN, QC2MAX, RAMP_AGC, RAMP_10, RAMP_30, RAMP_Q, APF] = idx_gen;
 
-%% Convert to internal ordering
-intmpc = ext2int(mpc);
+%% Check if all buses are disconnected
+btype = mpc.bus(:,BUS_TYPE);
+if min(btype)==4 && max(btype==4)
+    mpc.bus(:,PD)=zeros(length(btype),1);
+    mpc.bus(:,QD)=zeros(length(btype),1);
+else
+    %% Convert to internal ordering
+    intmpc = ext2int(mpc);
 
-%% System constants
-nb = size(intmpc.bus,1);
+    %% System constants
+    nb = size(intmpc.bus,1);
 
-% Branch data
-fmax = intmpc.branch(:,RATE_A)/intmpc.baseMVA;
+    % Branch data
+    fmax = intmpc.branch(:,RATE_A)/intmpc.baseMVA;
 
-% Generator data
-ng = size(intmpc.gen,1);
-gmax = intmpc.gen(:,PMAX)/intmpc.baseMVA;
-gmin = intmpc.gen(:,PMIN)/intmpc.baseMVA;
-pg = intmpc.gen(:,PG)/intmpc.baseMVA;
+    % Generator data
+    ng = size(intmpc.gen,1);
+    gmax = intmpc.gen(:,PMAX)/intmpc.baseMVA;
+    gmin = intmpc.gen(:,PMIN)/intmpc.baseMVA;
+    pg = intmpc.gen(:,PG)/intmpc.baseMVA;
 
-% Generator to Bus Connection Matrix
-BG = sparse(intmpc.gen(:,GEN_BUS),(1:ng)',ones(ng,1),nb,ng);
+    % Generator to Bus Connection Matrix
+    BG = sparse(intmpc.gen(:,GEN_BUS),(1:ng)',ones(ng,1),nb,ng);
 
-% Load Data
-dmax = intmpc.bus(:,PD)/intmpc.baseMVA;
-dmin = zeros(nb,1);
+    % Load Data
+    dmax = intmpc.bus(:,PD)/intmpc.baseMVA;
+    dmin = zeros(nb,1);
 
-% PTDF matrix
-S = makePTDF(intmpc);
+    % PTDF matrix
+    S = makePTDF(intmpc);
 
-%% Optimization for load shedding
-g = sdpvar(ng,1);
-d = sdpvar(nb,1);
+    %% Optimization for load shedding
+    g = sdpvar(ng,1);
+    d = sdpvar(nb,1);
 
-c1 = ones(nb,1);
-c2 = ones(ng,1);
+    c1 = ones(nb,1);
+    c2 = ones(ng,1);
 
-constraints = [gmin<=g<=gmax, dmin<=d<=dmax,...
-    c1'*((BG*g)-d)==0, -fmax<=S*((BG*g)-d)<=fmax];
-objective = c1'*(dmax-d)+c2'*abs(pg-g);
+    constraints = [gmin<=g<=gmax, dmin<=d<=dmax,...
+        c1'*((BG*g)-d)==0, -fmax<=S*((BG*g)-d)<=fmax];
+    objective = c1'*(dmax-d)+c2'*abs(pg-g);
 
-optimize(constraints,objective);
-g_solved = value(g);
-d_solved = value(d);
+    optimize(constraints,objective);
+    g_solved = value(g);
+    d_solved = value(d);
 
-%% Update the power system case
-intmpc.bus(:,PD) = d_solved * intmpc.baseMVA;
-intmpc.gen(:,PG) = g_solved * intmpc.baseMVA;
+    %% Update the power system case
+    ratio = intmpc.bus(:,QD)./intmpc.bus(:,PD);
+    ratio(isnan(ratio))=0;
+    intmpc.bus(:,PD) = d_solved * intmpc.baseMVA;
+    intmpc.bus(:,QD) = intmpc.bus(:,PD) .* ratio;
+    intmpc.gen(:,PG) = g_solved * intmpc.baseMVA;
 
-mpc = int2ext(intmpc);
+    mpc = int2ext(intmpc);
+end
 end
 
