@@ -28,6 +28,11 @@ flim = mpc.branch(:,RATE_A);
 
 
 %% Event simulation (line trip with no transient)
+% This evaluates the cascade of trips for an outage in each branch in the
+% network. The cascade of trips is stored as a matrix of cells with each
+% row listing branchies which are tripped at successive iterations. The
+% branches trips at each iteration are listed in each column. AC Power flow
+% is used in this study.
 trip = cell(nl,1);
 for k=1:nl
     iter = 1;
