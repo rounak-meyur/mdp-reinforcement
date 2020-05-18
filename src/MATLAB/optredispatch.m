@@ -1,5 +1,5 @@
-function [mpc] = redispatch(mpc)
-%redispatch Optimization framework to shed load based on the DC OPF
+function [mpc] = optredispatch(mpc)
+%optredispatch Optimization framework to shed load based on the DC OPF
 %formulation.
 %
 %   The function takes as input the current generations and loads at all

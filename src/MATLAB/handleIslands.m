@@ -60,7 +60,7 @@ mpc.bus(busind,BUS_TYPE)=4;
 %% Redispatch generation and demands in each island
 mpc_array = extract_islands(mpc);
 for i=1:length(mpc_array)
-    submpc = redispatch(mpc_array{1,i});
+    submpc = optredispatch(mpc_array{1,i});
     
     % Replace Pd values
     [~,busind] = ismember(submpc.bus(:,BUS_I),mpc.bus(:,BUS_I));

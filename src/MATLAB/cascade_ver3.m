@@ -23,25 +23,52 @@ fname = strcat(prgdir,'power-flow',suffix,'.txt');
 %% Initialize simulation
 % Load case and 
 mpc = loadcase('case39');
+mpc = case39mac(mpc);
 nl = size(mpc.branch,1);
 flim = mpc.branch(:,RATE_A);
 
 
 %% Event simulation (line trip with no transient)
-trip_k = 20;
+%   Steady state power flow: Newton Raphson load flow model
+%   Initiating event as the first set of lines
+%   List of steps in the cascading model
+%   1. Trip out of limit transmission lines/transformers
+%   2. Redispatch generators
+%   3. Loadshedding
+%   4. Continuation power flow to identify voltage instability
+%   
 
-% Run AC power flow in steady state
+
+trip_k = 27;
+
+% Step 0: Run AC power flow in steady state
 flogic = zeros(nl,1);
-simmpc_init = runpf(mpc,mpopt,fname);
+simmpc = runpf(mpc,mpopt,fname);
+
+% Start of the cascading scenario
+% Step 1: Simulate the trip event
+simmpc.branch(trip_k,BR_STATUS) = 0;
+
+% Step 2: Find islands and compute load-generation imbalance
+[groups,isolated] = find_islands(simmpc);
+% Isolated nodes are to be disconnected
+% For each island compute the load-generation imbalance
+% Compute the frequency deviation based on the droop characteristics
+% 
+Cg = makeCg(simmpc);
+
+return
+for j=1:length(groups)
+    [~,busind] = ismember(groups{1,j},simmpc.bus(:,1)); % index of buses
+    bustype = simmpc.bus(busind,2);                     % type of bus
+    
+    % Compute total load, generation and mismatch
+    LOAD = sum(simmpc.bus(busind,3));
+end
 
 
-% Simulate the trip event
-simmpc_init.branch(trip_k,BR_STATUS) = 0;
-
-% Handle islands without slack bus and
-% redispatch load to maintain a healthy power system
-simmpc_mod = handleIslands(simmpc_init);
-
+return
+%% Test setup
 % Run ac power flow after redispatch
 simmpc_target = runpf(simmpc_mod,mpopt,fname);
 % pf = simmpc.branch(:,PF);
