@@ -35,7 +35,7 @@ flim = mpc.branch(:,6);
 %   
 
 
-trip_k = 27;
+trip_k = 2;
 
 % Step 0: Run AC power flow in steady state
 flogic = zeros(nl,1);
@@ -43,15 +43,23 @@ simmpc = runpf(mpc,mpopt,fname);
 
 % Start of the cascading scenario
 % Step 1: Simulate the trip event
-altmpc = simmpc;
-altmpc.branch(trip_k,11) = 0;
-simmpc_mod = makeTarget(simmpc,altmpc);
+testmpc = simmpc;
+testmpc.branch(trip_k,11) = 0;
+[groups,isolated] = find_islands(testmpc);
 
+% Step 2: Find islands and compute load-generation imbalance
+% Isolated nodes are to be disconnected
+% For each island compute the load-generation imbalance
+% Compute the frequency deviation based on the droop characteristics
+% Redispatch generation or shed load based on frequency deviation
 
+simmpc_mod = handleIslands(simmpc);
+% simmpc_mod.bus(34,2)=3;
+% simmpc.bus(34,2)=3;
 %% Continuation power flow
 results = runcpf(simmpc,simmpc_mod,mpopt,fname);
+
 vmag = abs(results.cpf.V);
-plot(vmag')
-grid on
-check_vmag = diff(vmag');
+plot(vmag(30:39,:)')
+
 

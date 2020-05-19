@@ -5,8 +5,8 @@ function Cg = makeCg(bus,gen)
 %     Cg = MAKEBDC(MPC)
 %     Cg = MAKEBDC(BUS, GEN)
 %
-%  Returns the sparse generator to bus connection matrix. The entry (i,j)
-%  is 1 if the ith generator exists on the jth bus.
+%  Returns the sparse bus to generator connection matrix. The entry (i,j)
+%  is 1 if the ith bus houses the jth generator.
 %
 
 %% extract from MPC if necessary
@@ -32,7 +32,7 @@ if any(bus(:, BUS_I) ~= (1:nb)')
 end
 
 %% build the sparse matrix
-Cg = sparse((1:ng), gen(:,GEN_BUS), ones(ng, 1), ng, nb); 
+Cg = sparse(gen(:,GEN_BUS), (1:ng)', ones(ng, 1), nb, ng); 
 
 end
 

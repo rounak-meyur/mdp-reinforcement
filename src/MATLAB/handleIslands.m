@@ -56,22 +56,5 @@ end
 % Handle isolated buses
 [~,busind] = ismember(isolated,mpc.bus(:,BUS_I));
 mpc.bus(busind,BUS_TYPE)=4;
-
-%% Redispatch generation and demands in each island
-mpc_array = extract_islands(mpc);
-for i=1:length(mpc_array)
-    submpc = optredispatch(mpc_array{1,i});
-    
-    % Replace Pd values
-    [~,busind] = ismember(submpc.bus(:,BUS_I),mpc.bus(:,BUS_I));
-    mpc.bus(busind,PD) = submpc.bus(:,PD);
-    mpc.bus(busind,QD) = submpc.bus(:,QD);
-    
-    % Replace Pg values
-    subgen = submpc.gen(:,GEN_BUS);
-    simgen = mpc.gen(:,GEN_BUS);
-    genind = ismember(simgen,intersect(subgen,simgen,'stable'));
-    mpc.gen(genind,PG) = submpc.gen(:,PG);
-end
 end
 

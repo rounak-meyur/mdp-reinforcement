@@ -46,7 +46,7 @@ else
     pg = intmpc.gen(:,PG)/intmpc.baseMVA;
 
     % Generator to Bus Connection Matrix
-    BG = sparse(intmpc.gen(:,GEN_BUS),(1:ng)',ones(ng,1),nb,ng);
+    Cg = sparse(intmpc.gen(:,GEN_BUS),(1:ng)',ones(ng,1),nb,ng);
 
     % Load Data
     dmax = intmpc.bus(:,PD)/intmpc.baseMVA;
@@ -63,7 +63,7 @@ else
     c2 = ones(ng,1);
 
     constraints = [gmin<=g<=gmax, dmin<=d<=dmax,...
-        c1'*((BG*g)-d)==0, -fmax<=S*((BG*g)-d)<=fmax];
+        c1'*((Cg*g)-d)==0, -fmax<=S*((Cg*g)-d)<=fmax];
     objective = c1'*(dmax-d)+c2'*abs(pg-g);
 
     optimize(constraints,objective);

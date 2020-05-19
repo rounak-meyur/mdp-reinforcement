@@ -2,40 +2,35 @@ function mpc = case39mac(mpc)
 %case39mac Loads the machine and governor data for the 39 bus test case
 
 % Machine data format
-%       1. machine number,
-%       2. bus number,
-%       3. base mva,
-%       4. leakage reactance x_l(pu),
-%       5. resistance r_a(pu),
-%       6. d-axis sychronous reactance x_d(pu),
-%       7. d-axis transient reactance x'_d(pu),
-%       8. d-axis subtransient reactance x"_d(pu),
-%       9. d-axis open-circuit time constant T'_do(sec),
-%      10. d-axis open-circuit subtransient time constant
+%      26. leakage reactance x_l(pu),
+%      27. resistance r_a(pu),
+%      28. d-axis sychronous reactance x_d(pu),
+%      29. d-axis transient reactance x'_d(pu),
+%      30. d-axis subtransient reactance x"_d(pu),
+%      31. d-axis open-circuit time constant T'_do(sec),
+%      32. d-axis open-circuit subtransient time constant
 %                T"_do(sec),
-%      11. q-axis sychronous reactance x_q(pu),
-%      12. q-axis transient reactance x'_q(pu),
-%      13. q-axis subtransient reactance x"_q(pu),
-%      14. q-axis open-circuit time constant T'_qo(sec),
-%      15. q-axis open circuit subtransient time constant
+%      33. q-axis sychronous reactance x_q(pu),
+%      34. q-axis transient reactance x'_q(pu),
+%      35. q-axis subtransient reactance x"_q(pu),
+%      36. q-axis open-circuit time constant T'_qo(sec),
+%      37. q-axis open circuit subtransient time constant
 %                T"_qo(sec),
-%      16. inertia constant H(sec),
-%      17. damping coefficient d_o(pu),
-%      18. dampling coefficient d_1(pu),
-%      19. saturation factor S(1.0)
-%      20. saturation factor S(1.2)
+%      38. inertia constant H(sec),
+%      39. damping coefficient d_o(pu),
+%      40. dampling coefficient d_1(pu),
+%      41. saturation factor S(1.0)
+%      42. saturation factor S(1.2)
 % note: all the following machines use transient reactance model
 %
 % Governor data format
-%       1. machine number,
-%       2. bus number,
-%       3. governor droop R(pu),
-%       4. time constant T_1(s),
-%       5. time constant T_2(s),
-%       6. time constant T_3(s),
-%       7. time constant T_4(s),
-%       8. time constant T_5(s),
-%       9. F
+%      43. governor droop R(pu),
+%      44. time constant T_1(s),
+%      45. time constant T_2(s),
+%      46. time constant T_3(s),
+%      47. time constant T_4(s),
+%      48. time constant T_5(s),
+%      49. F
 
 
 macdat = [
@@ -62,7 +57,7 @@ govdat = [
 9  38  0.00548 0.100 0.000 0.200 0.100  8.720 0.300;
 10 39  0.00548 0.100 0.000 0.200 0.100  8.720 0.300];
 
-mpc.mac = macdat;
-mpc.gov = govdat;
+mpc.gen(:,26:42) = macdat(:,4:end);
+mpc.gen(:,43:49) = govdat(:,3:end);
 end
 
