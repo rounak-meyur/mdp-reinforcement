@@ -46,42 +46,42 @@ freqdev = MISMATCH/beta;
 if (-5.0<=freqdev)&&(freqdev<=0.8)
     % If frequency is in between 59.2Hz and 65.0 Hz, redispatch through
     % generator droop control
-    delPg = freqdev*Rinv;
+    delPg = -freqdev*Rinv;
     delPd = zeros(nb,1);
     delQd = zeros(nb,1);
-    disp("Generators redispatched...\n")
+    disp("Generators redispatched...")
 elseif freqdev<-5.0
     % If frequency is greater than 65.0 Hz, trip the generator over 
     % frequency relays
     delPg = intmpc.gen(:,PG);
     delPd = zeros(nb,1);
     delQd = zeros(nb,1);
-    disp("Generators tripped by overfrequency relays.\n")
+    disp("Generators tripped by overfrequency relays.")
 elseif (0.8<freqdev)&&(freqdev<=1.2)
     % If frequency is less than 59.2 Hz and more than 58.8 Hz, 10% of the 
     % load is removed
     delPg = zeros(ng,1);
-    delPd = 0.1*intmpc.bus(:,PD);
-    delQd = 0.1*intmpc.bus(:,QD);
+    delPd = (0.1*intmpc.bus(:,PD)>=0).*intmpc.bus(:,PD);
+    delQd = (0.1*intmpc.bus(:,PD)>=0).*intmpc.bus(:,QD);
     disp("10% of total load shed.")
 elseif (1.2<freqdev)&&(freqdev<=2.0)
     % If frequency is less than 58.8 Hz and more than 58.0 Hz, 25% of the 
     % load is removed
     delPg = zeros(ng,1);
-    delPd = 0.25*intmpc.bus(:,PD);
-    delQd = 0.25*intmpc.bus(:,QD);
+    delPd = (0.25*intmpc.bus(:,PD)>=0).*intmpc.bus(:,PD);
+    delQd = (0.25*intmpc.bus(:,PD)>=0).*intmpc.bus(:,QD);
     disp("25% of total load shed.")
 elseif (2.0<freqdev)&&(freqdev<=5.0)
     % If frequency is less than 58.0 Hz and more than 55.0 Hz, 45% of the 
     % load is removed
     delPg = zeros(ng,1);
-    delPd = 0.45*intmpc.bus(:,PD);
-    delQd = 0.45*intmpc.bus(:,QD);
+    delPd = (0.45*intmpc.bus(:,PD)>=0).*intmpc.bus(:,PD);
+    delQd = (0.45*intmpc.bus(:,PD)>=0).*intmpc.bus(:,QD);
     disp("45% of total load shed.")
 else
     delPg = zeros(ng,1);
-    delPd = intmpc.bus(:,PD);
-    delQd = intmpc.bus(:,QD);
+    delPd = (intmpc.bus(:,PD)>=0).*intmpc.bus(:,PD);
+    delQd = (intmpc.bus(:,PD)>=0).*intmpc.bus(:,QD);
     disp("Frequency too low. All load shed.")
 end
 

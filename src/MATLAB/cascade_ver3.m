@@ -35,7 +35,7 @@ flim = mpc.branch(:,6);
 %   
 
 
-trip_k = 27;
+trip_k = [20];
 
 % Step 0: Run AC power flow in steady state
 flogic = zeros(nl,1);
@@ -43,15 +43,22 @@ simmpc = runpf(mpc,mpopt,fname);
 
 % Start of the cascading scenario
 % Step 1: Simulate the trip event
-altmpc = simmpc;
-altmpc.branch(trip_k,11) = 0;
-simmpc_mod = makeTarget(simmpc,altmpc);
-
+[base,target] = linetrip(simmpc,trip_k);
 
 %% Continuation power flow
-results = runcpf(simmpc,simmpc_mod,mpopt,fname);
-vmag = abs(results.cpf.V);
-plot(vmag')
-grid on
-check_vmag = diff(vmag');
+count = 0;
+% mpopt = mpoption(mpopt, 'cpf.stop_at', 'FULL');
+mpopt = mpoption(mpopt, 'cpf.plot.level', 2);
+
+% Run Continuation power flow
+results = runcpf(base,target,mpopt,fname);
+if results.cpf.events.name == 'NOSE'
+    target.bus(10,3)=0;
+    target.bus(10,4)=0;
+end
+results = runcpf(base,target,mpopt,fname);
+
+
+
+
 
