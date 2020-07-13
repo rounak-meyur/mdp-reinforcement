@@ -20,6 +20,7 @@ fname = strcat(prgdir,'power-flow',suffix,'.txt');
 % Load case and 
 mpc = loadcase('case39');
 mpc = case39mac(mpc);
+
 nl = size(mpc.branch,1);
 flim = mpc.branch(:,6);
 
@@ -35,7 +36,7 @@ flim = mpc.branch(:,6);
 %   
 
 
-trip_k = [20];
+trip_k = [27];
 
 % Step 0: Run AC power flow in steady state
 flogic = zeros(nl,1);
@@ -52,12 +53,12 @@ mpopt = mpoption(mpopt, 'cpf.plot.level', 2);
 
 % Run Continuation power flow
 results = runcpf(base,target,mpopt,fname);
-if results.cpf.events.name == 'NOSE'
-    target.bus(10,3)=0;
-    target.bus(10,4)=0;
-end
-results = runcpf(base,target,mpopt,fname);
 
+% if results.cpf.events.name == 'NOSE'
+%     target.bus(10,3)=0;
+%     target.bus(10,4)=0;
+% end
+% results = runcpf(base,target,mpopt,fname);
 
 
 
