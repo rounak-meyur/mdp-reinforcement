@@ -4,15 +4,17 @@ clear
 c = ones(5,1);
 C = ones(5);
 z = zeros(5,1);
-W = eye(5)-0.2*C;
+I = eye(5);
+W = I-0.2*C;
 Q = sqrtm(W);
 X = sdpvar(5,5,'full');
 F = sdpvar(5);
 
-M = [X Q;Q F+0.2*C];
+M = [X I;I F];
 
-objective = trace(X);
-constraints = [M>=0, F*c==z,X>0,F>0];
+objective = trace(W*X);
+constraints = [M>=0, X>=I, F>=I];
+
 opt = sdpsettings('debug','1','solver','sedumi','dualize','1');
 
 sol = optimize(constraints,objective,opt);
